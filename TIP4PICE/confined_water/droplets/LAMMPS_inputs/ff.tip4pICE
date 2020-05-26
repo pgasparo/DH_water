@@ -1,0 +1,82 @@
+#########TIP4P Ice##################
+######TIMESTEP: typically 2fs#######
+########Appropriate values##########
+#O mass = 15.9994
+#H mass = 1.008
+#O charge = -1.1794
+#H charge = 0.5897
+#r0 of OH bond = 0.9572
+#theta of HOH angle = 104.52
+#OM distance = 0.1577
+#LJ epsilon of O-O = 0.21084
+#LJ sigma of O-O = 3.1668
+#LJ epsilon, sigma of OH, HH = 0.0
+#Coulombic cutoff = 8.5
+
+group           gHydrogen type 1
+group           gOxygen type 2
+group           gWater type 1 2
+mass            1 1.008   # H
+mass            2 15.9994 # O
+set group gOxygen   charge -1.1794    # O
+set group gHydrogen charge  0.5897    # H
+
+######pair style syntax######
+#syntax: tip4p/long_or_cut args = otype htype btype atype qdist cutoff (cutoff 2)
+#o/htype = atom types for TIP4P O and H
+#b/atype = bond and angle type for TIP4P waters
+#qdist = didt from O atom to massless charge. i.e. OM distance
+#cutoff = global cutoff for LJ (and coulombic if only give one cutoff)
+#cutoff2 = global cutoff for Coulombic (optional)
+#Long style uses a long-range Coulombic solver (Ewald or PPPM)
+#cut style uses a cutoff for Coulombic interactions
+#cutoffs are in distance units (set by your units command at top)
+#cutoffs --> see TIP4P model papers
+
+######kspace style syntax######
+#kspace_style style value
+#style variations of pppm and Ewald
+#value = desired relative accuracy in forces
+#Defines the long-range solver for LAMMPS to use each timestep to compute
+#..long-range Coulombic interations or long range 1/r^6 interactions
+#MUST BE CONSISITENT WITH PAIR STYLE - see documentation of lammps for
+#compatbile styles
+#value -> sets convergence criterion. Smaller than seen in Lit
+
+######pair_coeff syntax######
+#pair_coeff groupdID groupID args
+#args meaning depend on the pair_style chosen
+#set here to have H-H and H-O interactions not computed
+#only compute the O-O interactions
+
+#pair modify tail yes#
+#maybe not necessary - include tail correction of energy from LJ cutoffs (hence maybe not needed)
+
+#pair coeff#
+#only doing for the O-O interactions - how model works
+#values see paper - or see lammps "howtotip4p"
+#syntax: ID ID epsilon sigma
+
+#bond style
+#0.9572 is length of bond O-H
+#force constant set to zero as dont model bond
+#but need distance as used for fix shake
+
+
+#pair_style      lj/cut/tip4p/cut 2 1 1 1 0.1577 8.5
+pair_style      lj/cut/tip4p/long 2 1 1 1 0.1577 8.5
+kspace_style    pppm/tip4p 5.0e-5
+pair_modify     tail yes
+
+pair_coeff      1 1 0.0 0.0 #H-H
+pair_coeff      1 2 0.0 0.0 #H-O
+pair_coeff      2 2 0.21084 3.1668 #O-O
+
+bond_style      harmonic
+bond_coeff      1 0.0 0.9572
+
+angle_style     harmonic
+angle_coeff     1 0.0 104.52
+
+neighbor       2.0 bin
+

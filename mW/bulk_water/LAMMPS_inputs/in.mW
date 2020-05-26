@@ -1,0 +1,41 @@
+####################################################################################
+# External variables that have to be passed on call
+# Timestep	= timestep in fs, standard 10
+# psRunTime	= run time [ps]
+# psStride	= traj and thermo stride [ps]
+# nRand		= random seed
+# dataIN        = data file to read in
+# T0		= temperature
+# outfile       = output traj
+#####################################################################################
+units          real
+dimension      3
+newton         on
+processors     * * * 
+boundary       p p p 
+atom_style     full
+
+####################################################################################
+read_data   ${dataIN}
+
+pair_style sw
+pair_coeff * * ./mW.sw mW
+
+neighbor       2.0 bin
+
+thermo         $(v_psStride*1000/v_Timestep)
+thermo_style   custom step time etotal ke pe enthalpy temp press vol density cpu
+thermo_modify  flush yes
+balance 1.0 shift z 15 1.05
+#kspace_modify  slab 3
+
+velocity        all create ${T0} ${nRand} dist gaussian mom yes rot yes
+
+timestep ${Timestep}
+fix f1 all nvt temp ${T0} ${T0} $(100*v_Timestep) tchain 10
+fix fMom all momentum 1 linear 1 1 1
+
+dump mf3 all xtc $(v_psStride*1000/v_Timestep) ${outfile}.xtc
+
+run $(v_psRunTime*1000/v_Timestep)
+

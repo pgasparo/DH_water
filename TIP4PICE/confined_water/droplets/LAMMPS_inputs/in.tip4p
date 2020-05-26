@@ -1,0 +1,50 @@
+####################################################################################
+# External variables that have to be passed on call
+# Temperature 	= temperature of the system
+# trjFile	= name of the .xtc trajectory file
+# dataFile	= name of the .data input for Lammps
+# nRand		= random number as seed for the velocity creation
+# Timestep	= timestep in fs
+# Eps		= LJ epsilon of mW C interaction
+# Sigma		= LJ epsilon of mW C interaction
+# nTimesteps	= number of timesteps to run
+# nStride       = stride of thermo and trajectory output
+#
+####################CHECK IF THESE ARE GOOD*************#################################################################
+#*******************************************************
+
+units          real
+dimension      3
+newton         on
+processors     * * *
+boundary       p p p
+atom_style     full
+read_data      ${dataIN} 
+####################################################################################
+include ff.tip4pICE
+
+
+timestep       ${Timestep}
+min_style      cg
+run_style      verlet
+
+thermo         $(v_psStride*1000/v_Timestep)
+thermo_style   custom step time etotal temp ke pe enthalpy press vol density cpu
+thermo_modify  flush yes
+
+####################################################################################
+#remove the center of mass momentum so droplet wont move
+fix fMom all momentum 1 linear 1 1 1
+
+fix fshake gWater shake 1e-4 20 0 b 1 a 1 
+
+velocity gWater create ${T0} ${nRand} dist gaussian mom yes rot yes
+
+fix f1 all nvt temp ${T0} ${T0} $(100*v_Timestep) tchain 10
+
+dump d1 all xtc $(v_psStride*1000/v_Timestep) ${outfile}.xtc
+
+timestep ${Timestep}
+
+run $(v_psRunTime*1000/v_Timestep)
+

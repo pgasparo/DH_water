@@ -1,0 +1,50 @@
+####################################################################################
+# External variables that have to be passed on call
+# Timestep	= timestep in fs, standard 10
+# psRunTime	= run time [ps]
+# psStride	= traj and thermo stride [ps]
+# nRand		= random seed
+# dataIN        = data file to read in
+# T0		= temperature
+# outfile       = output traj
+# eps           = depth of the LJ potetial
+# sig           = minimum of the LJ potential
+#####################################################################################
+units          real
+dimension      3
+newton         on
+processors     * * *  
+boundary       p p p 
+atom_style     full
+
+####################################################################################
+read_data   ${dataIN}
+include ff.tip4pIce
+
+timestep       ${Timestep}
+min_style      cg
+run_style      verlet
+####################################################################################
+
+####################################################################################
+fix fShake gWater shake 1e-5 100 0 b 1 a 1
+fix fMom all momentum 1 linear 1 1 1
+fix zwall_lo gOxygen wall/lj93 zlo -2.0954059055118113 ${eps} ${sig} 12 pbc yes 
+fix zwall_hi gOxygen wall/lj93 zhi 49.12945608365019 ${eps} ${sig} 12 pbc yes
+fix_modify zwall_lo energy yes #energy contribution of wall added to pe of system
+fix_modify zwall_hi energy yes
+
+thermo         $(v_psStride*1000/v_Timestep)
+thermo_style   custom step time f_zwall_lo f_zwall_hi etotal ke pe enthalpy temp press vol density cpu
+thermo_modify  flush yes
+#kspace_modify  slab 3
+
+velocity        all create ${T0} ${nRand} dist gaussian mom yes rot yes
+
+dump mf3 all xtc $(v_psStride*1000/v_Timestep) ${outfile}.xtc
+
+
+fix f1 all nvt temp ${T0} ${T0} $(1000*v_Timestep) tchain 10
+
+run $(v_psRunTime*1000/v_Timestep)
+

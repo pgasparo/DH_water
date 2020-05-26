@@ -1,0 +1,25 @@
+group           gHydrogen type 1
+group           gOxygen type 2
+group           gWater type 1 2
+mass            1 1.008   # H
+mass            2 15.9994 # O
+set group gOxygen   charge -1.1794    # O
+set group gHydrogen charge  0.5897    # H
+
+#pair_style      lj/cut/tip4p/cut 2 1 1 1 0.1577 8.5
+pair_style      lj/cut/tip4p/long 2 1 1 1 0.1577 8.5
+kspace_style    pppm/tip4p 5.0e-5
+kspace_modify   slab 3
+pair_modify     tail yes
+
+pair_coeff      1 1 0.0 0.0 #H-H
+pair_coeff      1 2 0.0 0.0 #H-O      
+pair_coeff      2 2 0.21084 3.1668 #O-O
+
+bond_style      harmonic
+bond_coeff      1 0.0 0.9572
+
+angle_style     harmonic
+angle_coeff     1 0.0 104.52
+
+neighbor       2.0 bin
