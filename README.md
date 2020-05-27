@@ -21,3 +21,21 @@ run $(v_psRunTime*1000/v_Timestep)
 ```
 
 where in this case $RUNTIME will be the time of maximum heterogeneity.
+
+Once obtained an ensamble of displacements the following script can be used to compute the local diffusivity:
+
+```
+#!/bin/sh
+
+c=0
+for i in *displ* ; do
+  c=$((c+1))
+  tail -3072 $i | awk '{print ($1*$1+$2*$2+$3*$3)}' > tmp.$c
+done
+
+paste tmp.* | awk '{c=0;for(j=1;j<=NF;j++){c+=$j};print c/NF}'
+rm tmp*
+```
+
+The script should be placed in the directory containing the displacements and its output should be redirected to a file.
+
