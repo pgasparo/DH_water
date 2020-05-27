@@ -17,21 +17,19 @@ atom_style     full
 
 ####################################################################################
 read_data   ${dataIN}
+include ff.spce
 
-pair_style sw
-pair_coeff * * ./mW.sw mW
-
-neighbor       2.0 bin
+min_style      cg
+run_style      verlet
 
 thermo         $(v_psStride*1000/v_Timestep)
 thermo_style   custom step time etotal ke pe enthalpy temp press vol density cpu
 thermo_modify  flush yes
-balance 1.0 shift z 15 1.05
-#kspace_modify  slab 3
 
 velocity        all create ${T0} ${nRand} dist gaussian mom yes rot yes
 
 timestep ${Timestep}
+fix fShake gWater shake 0.0001 20 0 b 1 a 1
 # NVT
 fix f1 all nvt temp ${T0} ${T0} $(100*v_Timestep) tchain 10
 # decomment to do NVE

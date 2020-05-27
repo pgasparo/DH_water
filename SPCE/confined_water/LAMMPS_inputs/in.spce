@@ -12,31 +12,32 @@ units          real
 dimension      3
 newton         on
 processors     * * * 
-boundary       p p p 
+boundary       p p f 
 atom_style     full
 
 ####################################################################################
 read_data   ${dataIN}
+include ff.spce
 
-pair_style sw
-pair_coeff * * ./mW.sw mW
-
-neighbor       2.0 bin
+min_style      cg
+run_style      verlet
 
 thermo         $(v_psStride*1000/v_Timestep)
 thermo_style   custom step time etotal ke pe enthalpy temp press vol density cpu
 thermo_modify  flush yes
 balance 1.0 shift z 15 1.05
+# decomment to switch a proper treatment of the electrostatics in the slab geometry
 #kspace_modify  slab 3
 
 velocity        all create ${T0} ${nRand} dist gaussian mom yes rot yes
 
 timestep ${Timestep}
+fix fShake gWater shake 0.0001 20 0 b 1 a 1
 # NVT
 fix f1 all nvt temp ${T0} ${T0} $(100*v_Timestep) tchain 10
 # decomment to do NVE
 #fix f1 all nve
-# decomment to do NPT
+# decommnet to do NPT
 #fix f1 all npt temp ${T0} ${T0} $(100*v_Timestep) iso 1.0 1.0 $(1000*v_Timestep) tchain 10 pchain 10
 fix fMom all momentum 1 linear 1 1 1
 

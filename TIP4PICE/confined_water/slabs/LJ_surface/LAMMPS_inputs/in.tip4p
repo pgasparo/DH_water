@@ -43,8 +43,10 @@ velocity        all create ${T0} ${nRand} dist gaussian mom yes rot yes
 
 dump mf3 all xtc $(v_psStride*1000/v_Timestep) ${outfile}.xtc
 
-
+#NVT
 fix f1 all nvt temp ${T0} ${T0} $(1000*v_Timestep) tchain 10
+# decomment to do NVE
+#fix f1 all nve
 
 run $(v_psRunTime*1000/v_Timestep)
 

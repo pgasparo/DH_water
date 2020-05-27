@@ -30,7 +30,12 @@ velocity        all create ${T0} ${nRand} dist gaussian mom yes rot yes
 
 timestep ${Timestep}
 fix fShake gWater shake 1e-5 100 0 b 1 a 1
+# NVT
 fix f1 all nvt temp ${T0} ${T0} $(100*v_Timestep) tchain 10
+# decomment to do NVE
+#fix f1 all nve
+# decomment to do NPT
+#fix f1 all npt temp ${T0} ${T0} $(100*v_Timestep) iso 1.0 1.0 $(1000*v_Timestep) tchain 10 pchain 10
 fix fMom all momentum 1 linear 1 1 1
 
 dump mf3 all xtc $(v_psStride*1000/v_Timestep) ${outfile}.xtc
